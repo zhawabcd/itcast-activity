@@ -31,7 +31,8 @@
 		  	<td>
 		  		<form action="workflowAction_submitTask.action" method="POST">
 			  		<div align="left" class="STYLE21">
-				 		<%--<input type="hidden" name="taskId"/>--%>
+							<s:hidden name="taskId"/>
+							<s:hidden name="id"/>
 				 		请假天数:<s:textfield name="days" cssStyle="width: 200px"  disabled="true" /><br/>
 				 		请假原因:<s:textfield name="content"  disabled="true" cssStyle="width: 800px;"/><br/>
 				 		请假备注:<s:textarea name="remark" disabled="true" cols="30" rows="2"/><br/>
@@ -68,40 +69,30 @@
 			      </tr>
 			    </table></td>
 			  </tr>
-			  <tr>
-			    <td><table width="100%" border="0" cellpadding="0" cellspacing="1" bgcolor="#a8c7ce" onmouseover="changeto()"  onmouseout="changeback()">
-			      <tr>
-			        <td width="15%" height="20" bgcolor="d3eaef" class="STYLE6"><div align="center"><span class="STYLE10">时间</span></div></td>
-			        <td width="10%" height="20" bgcolor="d3eaef" class="STYLE6"><div align="center"><span class="STYLE10">批注人</span></div></td>
-			        <td width="75%" height="20" bgcolor="d3eaef" class="STYLE6"><div align="center"><span class="STYLE10">批注信息</span></div></td>
-			      </tr>
-			        <tr>
-				        <td height="20" bgcolor="#FFFFFF" class="STYLE6"><div align="center">2014-02-04 21:51:05</div></td>
-				        <td height="20" bgcolor="#FFFFFF" class="STYLE19"><div align="center">范冰冰</div></td>
-				        <td height="20" bgcolor="#FFFFFF" class="STYLE19"><div align="center">检查</div></td>
-				    </tr> 
-			      
-			    </table></td>
-			  </tr>
+                    <tr>
+                        <td><table width="100%" border="0" cellpadding="0" cellspacing="1" bgcolor="#a8c7ce" onmouseover="changeto()"  onmouseout="changeback()">
+                            <tr>
+                                <td width="15%" height="20" bgcolor="d3eaef" class="STYLE6"><div align="center"><span class="STYLE10">时间</span></div></td>
+                                <td width="10%" height="20" bgcolor="d3eaef" class="STYLE6"><div align="center"><span class="STYLE10">批注人</span></div></td>
+                                <td width="75%" height="20" bgcolor="d3eaef" class="STYLE6"><div align="center"><span class="STYLE10">批注信息</span></div></td>
+                            </tr>
+							<s:if test="commentList != null and commentList.size() > 0">
+								<s:iterator value="commentList">
+								<tr>
+									<td height="20" bgcolor="#FFFFFF" class="STYLE6"><div align="center"><s:date name="time" format="yyyy-MM-dd HH:mm:ss"/> </div></td>
+									<td height="20" bgcolor="#FFFFFF" class="STYLE19"><div align="center"><s:property value="userId"/> </div></td>
+									<td height="20" bgcolor="#FFFFFF" class="STYLE19"><div align="center"><s:property value="fullMessage"/> </div></td>
+								</tr>
+								</s:iterator>
+							</s:if>
+							<s:else>
+								<tr>
+									<td width="6%" height="19" valign="bottom"><div align="center"><img src="${pageContext.request.contextPath }/images/tb.gif" width="14" height="14" /></div></td>
+									<td width="94%" valign="bottom"><span><b>暂时没有批注信息</b></span></td>
+								</tr>
+							</s:else>
+                        </table></td>
+                    </tr>
 		</table>
-	
-		<%-- <table width="100%" border="0" align="center" cellpadding="0" cellspacing="0">
-			  <tr>
-			    <td height="30"><table width="100%" border="0" cellspacing="0" cellpadding="0">
-			      <tr>
-			        <td height="24" bgcolor="#F7F7F7"><table width="100%" border="0" cellspacing="0" cellpadding="0">
-			          <tr>
-			            <td><table width="100%" border="0" cellspacing="0" cellpadding="0">
-			              <tr>
-			                <td width="6%" height="19" valign="bottom"><div align="center"><img src="${pageContext.request.contextPath }/images/tb.gif" width="14" height="14" /></div></td>
-			                <td width="94%" valign="bottom"><span><b>暂时没有批注信息</b></span></td>
-			              </tr>
-			            </table></td>
-			          </tr>
-			        </table></td>
-			      </tr>
-			    </table></td>
-			  </tr>
-		</table> --%>
 </body>
 </html>

@@ -74,10 +74,10 @@
                                         <a href="${pageContext.request.contextPath }/workflowAction_startProcess.action?id=<s:property value="id" />" >申请请假</a>
                                     </s:if>
                                     <s:elseif test="state==1">
-                                        <a href="${pageContext.request.contextPath }/workflowAction_viewHisComment.action?id=1" >查看审核记录</a>
+                                        <a href="${pageContext.request.contextPath }/workflowAction_viewHisComment.action?id=<s:property value="id" />" >查看审核记录</a>
                                     </s:elseif>
                                     <s:elseif test="state==2">
-                                        <a href="${pageContext.request.contextPath }/workflowAction_viewHisComment.action?id=1" >查看审核记录</a>
+                                        <a href="${pageContext.request.contextPath }/workflowAction_viewHisComment.action?id=<s:property value="id" />" >查看审核记录</a>
                                         <a href="leaveBillAction_delete.action?id=1" >删除</a>
                                     </s:elseif>
                                 </div>

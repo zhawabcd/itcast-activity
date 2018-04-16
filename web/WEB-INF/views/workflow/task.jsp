@@ -44,7 +44,7 @@
                         <td height="20" bgcolor="#FFFFFF" class="STYLE19"><div align="center"><s:property value="assignee"/> </div></td>
                         <td height="20" bgcolor="#FFFFFF"><div align="center" class="STYLE21">
                             <a href="${pageContext.request.contextPath }/workflowAction_viewTaskForm.action?taskId=<s:property value="id"/> ">办理任务</a>
-                            <a target="_blank" href="workflowAction_viewCurrentImage.action?taskId=1">查看当前流程图</a>
+                            <a target="_blank" href="workflowAction_viewCurrentImage.action?taskId=<s:property value="id"/>">查看当前流程图</a>
                         </div></td>
                     </tr>
                 </s:iterator>

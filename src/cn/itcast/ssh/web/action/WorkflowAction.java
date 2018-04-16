@@ -10,6 +10,7 @@ import com.opensymphony.xwork2.ActionSupport;
 import com.opensymphony.xwork2.ModelDriven;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.ProcessDefinition;
+import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
 import org.apache.struts2.ServletActionContext;
 
@@ -17,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings("serial")
 public class WorkflowAction extends ActionSupport implements ModelDriven<WorkflowBean> {
@@ -125,6 +127,8 @@ public class WorkflowAction extends ActionSupport implements ModelDriven<Workflo
 		ValueContext.putValueStack(leaveBill);
 		List<String> outcomeList = workflowService.findOutcomeListByTaskId(workflowBean.getTaskId());
 		ValueContext.putValue2ObjStack("outcomeList", outcomeList);
+		List<Comment> commentList = workflowService.findCommentListByTaskId(workflowBean.getTaskId());
+		ValueContext.putValue2ObjStack("commentList", commentList);
 		return "taskForm";
 	}
 
@@ -132,6 +136,7 @@ public class WorkflowAction extends ActionSupport implements ModelDriven<Workflo
 	 * 提交任务
 	 */
 	public String submitTask() {
+		workflowService.saveSubmitTask(workflowBean);
 		return "listTask";
 	}
 
@@ -139,11 +144,22 @@ public class WorkflowAction extends ActionSupport implements ModelDriven<Workflo
 	 * 查看当前流程图（查看当前活动节点，并使用红色的框标注）
 	 */
 	public String viewCurrentImage() {
+		ProcessDefinition processDefinition = workflowService.findProcessDefinitionByTaskId(workflowBean.getTaskId());
+		ValueContext.putValue2ObjStack("deploymentId", processDefinition.getDeploymentId());
+		ValueContext.putValue2ObjStack("diagramResourceName", processDefinition.getDiagramResourceName());
+
+		Map<String, Object> map = workflowService.findDiagramPositionByTaskId(workflowBean.getTaskId());
+		ValueContext.putValue2ObjStack("acs", map);
+
 		return "image";
 	}
 
 	// 查看历史的批注信息
 	public String viewHisComment() {
+		LeaveBill leaveBill = workflowService.findLeaveBillById(workflowBean.getId());
+		ValueContext.putValueStack(leaveBill);
+		List<Comment> commentList = workflowService.findCommentListByLeaveBillId(workflowBean.getId());
+		ValueContext.putValue2ObjStack("commentList", commentList);
 		return "viewHisComment";
 	}
 }

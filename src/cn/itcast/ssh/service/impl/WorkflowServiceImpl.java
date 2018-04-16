@@ -6,22 +6,22 @@ import cn.itcast.ssh.service.IWorkflowService;
 import cn.itcast.ssh.utils.SessionContext;
 import cn.itcast.ssh.web.form.WorkflowBean;
 import org.activiti.engine.*;
+import org.activiti.engine.history.HistoricProcessInstance;
+import org.activiti.engine.impl.identity.Authentication;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.pvm.PvmTransition;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
+import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.ZipInputStream;
 
 public class WorkflowServiceImpl implements IWorkflowService {
@@ -176,6 +176,108 @@ public class WorkflowServiceImpl implements IWorkflowService {
 		}
 
 		return outcomeList;
+	}
+
+	@Override
+	public void saveSubmitTask(WorkflowBean workflowBean) {
+		// 添加批注
+		Task task = taskService.createTaskQuery()
+				.taskId(workflowBean.getTaskId())
+				.singleResult();
+		Authentication.setAuthenticatedUserId(SessionContext.get().getName());
+		taskService.addComment(workflowBean.getTaskId(), task.getProcessInstanceId(), workflowBean.getComment());
+
+		// 完成任务
+		HashMap<String, Object> variables = new HashMap<>();
+		if (!"默认提交".equals(workflowBean.getOutcome())) {
+			variables.put("message", workflowBean.getOutcome());
+		}
+		taskService.complete(workflowBean.getTaskId(), variables);
+
+		// 流程完成后更新LeaveBill状态
+		ProcessInstance processInstance = runtimeService.createProcessInstanceQuery()
+				.processInstanceId(task.getProcessInstanceId())
+				.singleResult();
+		if (processInstance == null) {
+			LeaveBill leaveBill = leaveBillDao.findById(workflowBean.getId());
+			leaveBill.setState(2);
+		}
+	}
+
+	@Override
+	public List<Comment> findCommentListByTaskId(String taskId) {
+		Task task = taskService.createTaskQuery()
+				.taskId(taskId)
+				.singleResult();
+
+		List<Comment> commentList = taskService.getProcessInstanceComments(task.getProcessInstanceId());
+		commentList.sort(new Comparator<Comment>() {
+			@Override
+			public int compare(Comment o1, Comment o2) {
+				long result = o1.getTime().getTime() - o2.getTime().getTime();
+				return result <= 0 ? -1 : 1;
+			}
+		});
+
+		return commentList;
+	}
+
+	@Override
+	public LeaveBill findLeaveBillById(Long id) {
+		return leaveBillDao.findById(id);
+	}
+
+	@Override
+	public List<Comment> findCommentListByLeaveBillId(Long leaveBillId) {
+		LeaveBill leaveBill = leaveBillDao.findById(leaveBillId);
+		String temp = leaveBill.getClass().getSimpleName();
+		String businessKey = temp + "#" + leaveBillId;
+
+		HistoricProcessInstance hpi = historyService.createHistoricProcessInstanceQuery()
+				.processInstanceBusinessKey(businessKey)
+				.singleResult();
+
+		List<Comment> commentList = taskService.getProcessInstanceComments(hpi.getId());
+		commentList.sort(new Comparator<Comment>() {
+			@Override
+			public int compare(Comment o1, Comment o2) {
+				long result = o1.getTime().getTime() - o2.getTime().getTime();
+				return result <= 0 ? -1 : 1;
+			}
+		});
+
+		return commentList;
+	}
+
+	@Override
+	public ProcessDefinition findProcessDefinitionByTaskId(String taskId) {
+		Task task = taskService.createTaskQuery()
+				.taskId(taskId)
+				.singleResult();
+		return repositoryService.createProcessDefinitionQuery()
+				.processDefinitionId(task.getProcessDefinitionId())
+				.singleResult();
+	}
+
+	@Override
+	public Map<String, Object> findDiagramPositionByTaskId(String taskId) {
+		Task task = taskService.createTaskQuery()
+				.taskId(taskId)
+				.singleResult();
+
+		ProcessInstance processInstance = runtimeService.createProcessInstanceQuery()
+				.processInstanceId(task.getProcessInstanceId())
+				.singleResult();
+
+		ProcessDefinitionEntity processDefinitionEntity = (ProcessDefinitionEntity) repositoryService.getProcessDefinition(processInstance.getProcessDefinitionId());
+		ActivityImpl activity = processDefinitionEntity.findActivity(processInstance.getActivityId());
+
+		Map<String, Object> map = new HashMap<>();
+		map.put("x", activity.getX()-3);
+		map.put("y", activity.getY()-3);
+		map.put("width", activity.getWidth());
+		map.put("height", activity.getHeight());
+		return map;
 	}
 
 
